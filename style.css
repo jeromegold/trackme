@@ -1,0 +1,28 @@
+body, html {
+    height: 100%;
+}
+
+.textFont
+{
+
+  font-family: "Comic Sans MS", sans-serif;
+
+}
+
+.footerBackground
+{
+
+  background-color: green;
+  height: 130px;
+  width: 100%;
+
+}
+
+#emailText
+{
+
+  color: #660000;
+  font-size: 14px;
+  font-family: "Courier New", Courier, monospace;
+
+}
