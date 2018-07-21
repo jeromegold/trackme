@@ -13,6 +13,14 @@ app.listen(port, () => {
 console.log(`listening on port ${port}`);
 });
 
+app.post('/register.html', function (req, res) {
+  res.sendFile(`${base}/register.html`);
+})
+
+app.post('/login.html', function (req, res) {
+  res.sendFile(`${base}/register.html`);
+})
+
 app.get('*', (req, res) => {
 res.sendFile(`${base}/404.html`);
 });
