@@ -1,6 +1,34 @@
-const devices = JSON.parse(localStorage.getItem('devices')) || [];
+//const devices = JSON.parse(localStorage.getItem('devices')) || [];
 const users = JSON.parse(localStorage.getItem('users')) || [];
 
+/*
+$.get('http://localhost:3001/devices')
+.then(response => {
+console.log(response);
+})
+.catch(error => {
+console.log(`Error: ${error}`);
+});
+*/
+
+$.get('http://localhost:3001/devices')
+.then(response => {
+  response.forEach(device => {
+    $('#devices tbody').append(`
+      <tr>
+      <td>${device.user}</td>
+      <td>${device.name}</td>
+      </tr>`
+    );
+  });
+})
+.catch(error => {
+  console.error(`Error: ${error}`);
+});
+
+
+
+/*
 devices.forEach(function(device) {
 $('#devices tbody').append(`
 <tr>
@@ -9,9 +37,9 @@ $('#devices tbody').append(`
 </tr>`
 );
 });
+*/
 
-
-
+/*
 $('#add-device').on('click', function() {
 const user = $('#user').val();
 const name = $('#name').val();
@@ -19,10 +47,28 @@ devices.push({ user, name });
 localStorage.setItem('devices', JSON.stringify(devices));
 location.href = '/';
 });
+*/
+$('#add-device').on('click', () => {
+  const name = $('#name').val();
+  const user = $('#user').val();
+  const sensorData = [];
+  const body = {
+    name,
+    user,
+    sensorData
+  };
+  $.post('http://localhost:3001/devices', body)
+  .then(response => {
+    location.href = '/';
+  })
+  .catch(error => {
+    console.error(`Error: ${error}`);
+  });
+});
 
 $('#send-command').on('click', function() {
-const command = $('#command').val();
-console.log(`command is: ${command}`);
+  const command = $('#command').val();
+  console.log(`command is: ${command}`);
 });
 
 $('#navbar').load('navbar.html');
@@ -47,20 +93,20 @@ $('#submit_registration').on('click', function() {
 
   if(exists)
   {
-      alert("email already exists!");
+    alert("email already exists!");
   }
   else
   {
-      if(password.localeCompare(confirm) === 0)
-      {
-        users.push({email, password});
-        localStorage.setItem('users', JSON.stringify(users));
-        location.href = 'login.html';
-      }
-      else
-      {
-         alert("passwords do not match!");
-      }
+    if(password.localeCompare(confirm) === 0)
+    {
+      users.push({email, password});
+      localStorage.setItem('users', JSON.stringify(users));
+      location.href = 'login.html';
+    }
+    else
+    {
+      alert("passwords do not match!");
+    }
   }
 
 
@@ -84,29 +130,29 @@ $('#submit_login').on('click', function() {
 
   if(!exists)
   {
-      alert("The user doesn't exist!");
+    alert("The user doesn't exist!");
   }
   else
   {
 
-      const localUserPwd = userObj.password;
+    const localUserPwd = userObj.password;
 
-      if(localUserPwd.localeCompare(password) === 0)
-      {
-          localStorage.setItem('isAuthenticated', true);
-          location.href = '/';
-      }
-      else
-      {
+    if(localUserPwd.localeCompare(password) === 0)
+    {
+      localStorage.setItem('isAuthenticated', true);
+      location.href = '/';
+    }
+    else
+    {
 
-          alert("The password is incorrect!");
+      alert("The password is incorrect!");
 
-      }
+    }
   }
 
 });
 
 const logout = () => {
-localStorage.removeItem('isAuthenticated');
-location.href = '/login.html';
+  localStorage.removeItem('isAuthenticated');
+  location.href = '/login.html';
 }
