@@ -1,53 +1,62 @@
 //const devices = JSON.parse(localStorage.getItem('devices')) || [];
 const users = JSON.parse(localStorage.getItem('users')) || [];
-const API_URL = 'http://localhost:5000/api';
-/*
-$.get('http://localhost:3001/devices')
-.then(response => {
-console.log(response);
-})
-.catch(error => {
-console.log(`Error: ${error}`);
-});
-*/
-
-$.get(`${API_URL}/devices`)
-.then(response => {
-  response.forEach(device => {
-    $('#devices tbody').append(`
-      <tr>
-      <td>${device.user}</td>
-      <td>${device.name}</td>
-      </tr>`
-    );
-  });
-})
-.catch(error => {
-  console.error(`Error: ${error}`);
-});
+const API_URL = 'http://217349255-sit-209.now.sh/api';
 
 
+const currentUser = localStorage.getItem('name');
 
-/*
-devices.forEach(function(device) {
-$('#devices tbody').append(`
-<tr>
-<td>${device.user}</td>
-<td>${device.name}</td>
-</tr>`
-);
-});
-*/
+if (currentUser) {
+  $.get(`${API_URL}/users/${currentUser}/devices`)
+  .then(response => {
+    response.forEach((device) => {
+      $('#devices tbody').append(`
+        <tr data-device-id=${device._id}>
+        <td>${device.user}</td>
+        <td>${device.name}</td>
+        </tr>`
+      );
 
-/*
-$('#add-device').on('click', function() {
-const user = $('#user').val();
-const name = $('#name').val();
-devices.push({ user, name });
-localStorage.setItem('devices', JSON.stringify(devices));
-location.href = '/';
-});
-*/
+
+    });
+    $('#devices tbody tr').on('click', (e) => {
+
+      const deviceId = e.currentTarget.getAttribute('data-device-id');
+        console.log("clicked");
+        console.log("deviceId is: ", deviceId);
+
+      $.get(`${API_URL}/devices/${deviceId}/device_history`)
+      .then(response => {
+        console.log("from app js sensorData is: ", response);
+        response.map(sensorData => {
+
+          console.log("var ", sensorData);
+          $('#historyContent').append(`
+            <tr>
+            <td>${sensorData.ts}</td>
+            <td>${sensorData.temp}</td>
+            <td>${sensorData.loc.lat}</td>
+            <td>${sensorData.loc.lon}</td>
+            </tr>
+            `);
+          });
+          $('#historyModal').modal('show');
+        });
+      });
+    })
+    .catch(error => {
+      console.error(`Error: ${error}`);
+    });
+  }
+  /*
+  else
+  {
+  const path = window.location.pathname;
+  if (path !== '/login.html') {
+  location.href = '/login.html';
+}
+}*/
+
+
 $('#add-device').on('click', () => {
   const name = $('#name').val();
   const user = $('#user').val();
@@ -75,84 +84,196 @@ $('#navbar').load('navbar.html');
 
 $('#footer').load('footer.html');
 
-$('#submit_registration').on('click', function() {
 
-  const email = $('#email_address').val();
+$('#submit_registration').on('click', () => {
+
+  const name = $('#email_address').val();
   const password = $('#password').val();
   const confirm = $('#confirm').val();
 
-  console.log(email);
-  console.log(password);
-  console.log(confirm);
-
-  const exists = users.find((user) => {
-
-    return user.email === email;
-
-  });
-
-  if(exists)
+  if(password.localeCompare(confirm) != 0)
   {
-    alert("email already exists!");
+    alert("passwords don't match");
   }
-  else
-  {
-    if(password.localeCompare(confirm) === 0)
-    {
-      users.push({email, password});
-      localStorage.setItem('users', JSON.stringify(users));
-      location.href = 'login.html';
-    }
-    else
-    {
-      alert("passwords do not match!");
-    }
-  }
+  else {
 
 
+    $.post(`${API_URL}/register`, { name, password })
+    .then((response) =>{
+      console.log(response);
+      if (response.success) {
+
+        $('#message').append(`<p class="alert alert-danger">Successful registration!</p>`);
+        //localStorage.setItem('name', name);
+        //localStorage.setItem('isAdmin', response.isAdmin);
+        //location.href = '/';
+      } else {
+        $('#message').append(`<p class="alert alert-danger">${response}
+        </p>`);
+      }
+    });
+  }
 });
 
 
-$('#submit_login').on('click', function() {
 
-  const email = $('#email_address').val();
+
+$('#submit_login').on('click', () => {
+  const name = $('#email_address').val();
   const password = $('#password').val();
-  var userObj = {};
+  //  console.log(user);
+  //  console.log(password);
 
-  console.log(email);
-
-  const exists = users.find((user) => {
-
-    userObj = user;
-    return user.email === email;
-
-  });
-
-  if(!exists)
-  {
-    alert("The user doesn't exist!");
-  }
-  else
-  {
-
-    const localUserPwd = userObj.password;
-
-    if(localUserPwd.localeCompare(password) === 0)
-    {
+  $.post(`${API_URL}/authenticate`, { name, password })
+  .then((response) =>{
+    console.log(response);
+    if (response.success) {
+      localStorage.setItem('name', name);
+      localStorage.setItem('isAdmin', response.isAdmin);
       localStorage.setItem('isAuthenticated', true);
       location.href = '/';
+    } else {
+      $('#message').append(`<p class="alert alert-danger">${response}
+      </p>`);
     }
-    else
-    {
+  });
+});
 
-      alert("The password is incorrect!");
 
-    }
-  }
+const logout = () => {
+  localStorage.removeItem('name');
+  localStorage.removeItem('isAdmin');
+  localStorage.isAuthenticated = false;
+  location.href = '/login.html';
+}
+
+
+/*
+$.get(`${API_URL}/devices`)
+.then(response => {
+response.forEach(device => {
+$('#devices tbody').append(`
+<tr>
+<td>${device.user}</td>
+<td>${device.name}</td>
+</tr>`
+);
+});
+})
+.catch(error => {
+console.error(`Error: ${error}`);
+});
+*/
+
+/*
+devices.forEach(function(device) {
+$('#devices tbody').append(`
+<tr>
+<td>${device.user}</td>
+<td>${device.name}</td>
+</tr>`
+);
+});
+*/
+
+/*
+$('#add-device').on('click', function() {
+const user = $('#user').val();
+const name = $('#name').val();
+devices.push({ user, name });
+localStorage.setItem('devices', JSON.stringify(devices));
+location.href = '/';
+});
+*/
+
+/*
+$.get('http://localhost:3001/devices')
+.then(response => {
+console.log(response);
+})
+.catch(error => {
+console.log(`Error: ${error}`);
+});
+*/
+
+/*
+$('#submit_registration').on('click', function() {
+
+const email = $('#email_address').val();
+const password = $('#password').val();
+const confirm = $('#confirm').val();
+
+console.log(email);
+console.log(password);
+console.log(confirm);
+
+const exists = users.find((user) => {
+
+return user.email === email;
 
 });
 
-const logout = () => {
-  localStorage.removeItem('isAuthenticated');
-  location.href = '/login.html';
+if(exists)
+{
+alert("email already exists!");
 }
+else
+{
+if(password.localeCompare(confirm) === 0)
+{
+users.push({email, password});
+localStorage.setItem('users', JSON.stringify(users));
+location.href = 'login.html';
+}
+else
+{
+alert("passwords do not match!");
+}
+}
+
+
+});
+*/
+
+
+
+/*
+$('#submit_login').on('click', function() {
+
+const email = $('#email_address').val();
+const password = $('#password').val();
+var userObj = {};
+
+console.log(email);
+
+const exists = users.find((user) => {
+
+userObj = user;
+return user.email === email;
+
+});
+
+if(!exists)
+{
+alert("The user doesn't exist!");
+}
+else
+{
+
+const localUserPwd = userObj.password;
+
+if(localUserPwd.localeCompare(password) === 0)
+{
+localStorage.setItem('isAuthenticated', true);
+location.href = '/';
+}
+else
+{
+
+alert("The password is incorrect!");
+
+}
+}
+
+});
+*/
