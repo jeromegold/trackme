@@ -1,7 +1,7 @@
 //const devices = JSON.parse(localStorage.getItem('devices')) || [];
 const users = JSON.parse(localStorage.getItem('users')) || [];
 const API_URL = 'http://217349255-sit-209.now.sh/api';
-
+const MQTT_URL = 'http://localhost:5001/send-command';
 
 const currentUser = localStorage.getItem('name');
 
@@ -74,10 +74,30 @@ $('#add-device').on('click', () => {
     console.error(`Error: ${error}`);
   });
 });
-
+/*
+app.post('/send-command', (req, res) => {
+  const { deviceId, command } = req.body;
+  const topic = `/command/${deviceId}`;
+  client.publish(topic, command, () => {
+    res.send(topic);
+  });
+});*/
 $('#send-command').on('click', function() {
   const command = $('#command').val();
+  const deviceId = $('#device').val();
+  const body = {
+    deviceId,
+    command
+  };
   console.log(`command is: ${command}`);
+  console.log(`device is: ${deviceId}`);
+  $.post(`${MQTT_URL}`, body )
+  .then(response => {
+    console.log("it worked");
+  })
+  .catch(error => {
+    console.error(`error`);
+  });
 });
 
 $('#navbar').load('navbar.html');

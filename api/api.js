@@ -197,7 +197,7 @@ app.post('/api/authenticate', (req, res) => {
 * @apiErrorExample {json} Error-Response:
 *
 *
-*   404 error   
+*   404 error
 *
 */
 
@@ -242,13 +242,13 @@ app.post('/api/devices', (req, res) => {
 * @apiSuccessExample Success-Response:
 * The req.body.command is logged to the console
 */
-
+/*
 app.post('/api/send_command', (req, res) => {
 
   console.log(req.body.command);
 
 });
-
+*/
 /**
 * @api {get} /api/devices/:deviceId/device_history AllDevices An array of all devices for a given id
 * @apiDeviceHistoryForId
