@@ -1,6 +1,10 @@
 const mqtt = require('mqtt');
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const Device = require('./models/device');
+const randomCoordinates = require('random-coordinates');
+const rand = require ('random-int');
 
 const app = express();
 const { URL, USER, PASSWORD } = process.env;
@@ -17,6 +21,7 @@ app.use(function(req, res, next) {
   next();
 });
 
+mongoose.connect(process.env.MONGO_URL);
 //app.use(express.static(`${__dirname}`));
 
 const client = mqtt.connect(URL, {
@@ -25,9 +30,49 @@ const client = mqtt.connect(URL, {
 });
 
 client.on('connect', () => {
-  console.log('mqtt connected');
+    client.subscribe('/sensorData');
+    console.log('mqtt connected');
 });
 
+
+client.on('message', (topic, message) => {
+  if (topic == '/sensorData') {
+    const data = JSON.parse(message);
+    console.log("data is, ", data);
+    console.log("device id is: ", data.deviceId)
+    Device.findOne({"name": data.deviceId }, (err, device) => {
+      console.log("the device si: ", device);
+      if (err) {
+        console.log(err)
+      }
+      const { sensorData } = device;
+      const { ts, loc, temp } = data;
+      sensorData.push({ ts, loc, temp });
+      device.sensorData = sensorData;
+      device.save(err => {
+        if (err) {
+          console.log(err)
+        }
+      });
+    });
+  }
+});
+
+app.put('/sensor-data', (req, res) => {
+  console.log("does this work?");
+  console.log(req.body);
+  const { deviceId } = req.body;
+  const [lat, lon] = randomCoordinates().split(", ");
+  const ts = new Date().getTime();
+  const loc = { lat, lon };
+  const temp = rand(20, 50);
+  const topic = `/sensorData`;
+  const message = JSON.stringify({ deviceId, ts, loc, temp });
+  console.log(message);
+  client.publish(topic, message, () => {
+    res.send('published new message');
+  });
+});
 /*
 client.publish(topic, command, () => {
 res.send('published new message');
