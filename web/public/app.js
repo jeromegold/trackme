@@ -1,6 +1,6 @@
 //const devices = JSON.parse(localStorage.getItem('devices')) || [];
 const users = JSON.parse(localStorage.getItem('users')) || [];
-const API_URL = 'http://217349255-sit-209.now.sh/api';
+const API_URL = 'https://217349255-sit-209.now.sh/api';
 const MQTT_URL = 'http://localhost:5001/send-command';
 
 const currentUser = localStorage.getItem('name');
